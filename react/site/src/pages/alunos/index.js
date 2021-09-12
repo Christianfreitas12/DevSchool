@@ -1,4 +1,12 @@
-import { useState, useEffect } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'
+
+import LoadingBar from 'react-top-loading-bar'
+
+import { confirmAlert } from 'react-confirm-alert'; 
+import 'react-confirm-alert/src/react-confirm-alert.css';
+
+import { useState, useEffect, useRef } from 'react';
 import Cabecalho from '../../components/cabecalho';
 import Menu from '../../components/menu';
 
@@ -15,54 +23,87 @@ export default function Index() {
    const [turma, setTurma] = useState('');
    const [curso, setCurso] = useState('');
    const [idAlterando, setIdAlterando] = useState(0);
+
+   let loading = useRef(null);
+  
    async function listar() {
+    loading.current.continuousStart();
        let r = await api.listar();
        setAlunos(r);
+       loading.current.complete();
    }
 
    async function inserir(){
-       if(idAlterando == 0){
-       let r = await api.inserir(nome, chamada, curso, turma);
-
-        if(r.erro)
-           alert(r.erro)
-           else
-           alert('Aluno inserido!');
-
-       } else{
-        let r = await api.editar(idAlterando, nome, chamada, curso, turma);
-         if(r.erro)
-           alert(r.erro)
-        else
-           alert('Aluno alterado!');
-       }
-       
-       limparcampos();
-       listar();
+    loading.current.continuousStart();
+    if(nome == '' || chamada == '' || curso == '' || turma == '') {
+        toast.error('Todos os campos obrigatorios')
+                    if(chamada > 0)
+                        if(idAlterando == 0){
+                            let r = await api.inserir(nome, chamada, curso, turma);
+                            if(r.erro)
+                                alert(r.erro)
+                            else 
+                            toast.dark('🔥 Aluno inserido!');
+                        } else{
+                            let r = await api.alterar(idAlterando, nome, chamada, curso, turma);
+                            if(r.erro)
+                                alert(r.erro)
+                            else 
+                            toast.dark('🔄 Aluno alterado!');
+                    } else
+                        toast.error('Chamada incorreta')
+                }  
+        loading.current.complete();
+        limparcampos();
+        listar();
    }
 
    function limparcampos(){
-       setNome('');
-       setchamada('');
-       setCurso('');
-       setTurma('');
-       setIdAlterando(0);
+    setNome('');
+    setchamada('');
+    setCurso('');
+    setTurma('');
+    setIdAlterando(0);
    }
 
    async function remover(id) {
-    let r = await api.remover(id);
-    alert('Aluno removido!');
-
+    loading.current.continuousStart();
+    confirmAlert({
+        title: 'Remover Aluno',
+        message: `Tem certeza que você deseja remover o aluno ${id} ?`,
+        buttons: [
+            {
+                label: 'Sim',
+                onClick: async() => {
+                    let r = await api.remover(id);
+                    if(r.erro)
+                      toast.error(`${r.erro}`);
+                    else{
+                        toast.dark('🗑️ Aluno removido!');
+                    }  
+                }
+            },
+            {
+                label: 'Não',
+                onClick: () => toast.dark('Aluno não Removido !')
+            }
+        ]
+    });
+    loading.current.complete();
     listar();
-}
+   }
 
-  async function editar(item) {
-     setNome(item.nm_aluno);
-     setchamada(item.nr_chamada);
-     setCurso(item.nm_curso);
-     setTurma(item.nm_turma);
-     setIdAlterando(item.id_matricula);
-  }
+   
+
+  
+
+   async function editar(item) {
+       setNome(item.nm_aluno);
+       setchamada(item.nr_chamada);
+       setCurso(item.nm_curso);
+       setTurma(item.nm_turma);
+       setIdAlterando(item.id_matricula);
+   }
 
 
    useEffect(() => {
@@ -72,6 +113,8 @@ export default function Index() {
 
     return (
         <Container>
+         <LoadingBar color="#EA10C7" ref={loading} />
+            <ToastContainer />
             <Menu />
             <Conteudo>
                 <Cabecalho />
@@ -80,7 +123,7 @@ export default function Index() {
                         
                         <div class="text-new-student">
                             <div class="bar-new-student"></div>
-                            <div class="text-new-student"> {idAlterando == 0 ? "Novo Aluno": "Alterando Aluno" + idAlterando} </div>
+                            <div class="text-new-student"> {idAlterando == 0 ? "Novo Aluno ": "Alterando Aluno " + idAlterando} </div>
                         </div>
 
                         <div class="input-new-student"> 
@@ -105,7 +148,7 @@ export default function Index() {
                                     <div class="input"> <input type="text" valeu={turma} onChange={e => setTurma(e.target.value)} /> </div> 
                                 </div>
                             </div>
-                            <div class="button-create"> <button onClick={inserir}> {idAlterando == 0 ? "Cadastrar" : "Alterar"} </button> </div>
+                            <div class="button-create"> <button onClick={inserir}>{idAlterando == 0 ? "Cadastrar": "Alterar"}</button> </div>
                         </div>
                     </div>
 
@@ -138,7 +181,7 @@ export default function Index() {
                                         <td> {item.nr_chamada} </td>
                                         <td> {item.nm_turma} </td>
                                         <td> {item.nm_curso} </td>
-                                        <td className="coluna-acao"> <button onClick={() => editar(item) }> <img src="/assets/images/edit.svg" alt="" /> </button> </td>
+                                        <td className="coluna-acao"> <button onClick={() => editar(item)}> <img src="/assets/images/edit.svg" alt="" /> </button> </td>
                                         <td className="coluna-acao"> <button onClick={() => remover(item.id_matricula) }> <img src="/assets/images/trash.svg" alt="" /> </button> </td>
                                      </tr>
 
