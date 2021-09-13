@@ -35,8 +35,6 @@ export default function Index() {
 
    async function inserir(){
     loading.current.continuousStart();
-    if(nome == '' || chamada == '' || curso == '' || turma == '') {
-        toast.error('Todos os campos obrigatorios')
                     if(chamada > 0)
                         if(idAlterando == 0){
                             let r = await api.inserir(nome, chamada, curso, turma);
@@ -52,7 +50,7 @@ export default function Index() {
                             toast.dark('🔄 Aluno alterado!');
                     } else
                         toast.error('Chamada incorreta')
-                }  
+                 
         loading.current.complete();
         limparcampos();
         listar();
@@ -85,7 +83,7 @@ export default function Index() {
             },
             {
                 label: 'Não',
-                onClick: () => toast.dark('Aluno não Removido !')
+                onClick: () => toast.dark('Remoção do Aluno Canselada!')
             }
         ]
     });
