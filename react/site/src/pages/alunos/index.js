@@ -1,10 +1,11 @@
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'
 
+import { confirmAlert } from 'react-confirm-alert'; 
+import 'react-confirm-alert/src/react-confirm-alert.css'; 
+
 import LoadingBar from 'react-top-loading-bar'
 
-import { confirmAlert } from 'react-confirm-alert'; 
-import 'react-confirm-alert/src/react-confirm-alert.css';
 
 import { useState, useEffect, useRef } from 'react';
 import Cabecalho from '../../components/cabecalho';
@@ -35,7 +36,7 @@ export default function Index() {
 
    async function inserir(){
     loading.current.continuousStart();
-                    if(chamada > 0)
+                    if(chamada > 0){
                         if(idAlterando == 0){
                             let r = await api.inserir(nome, chamada, curso, turma);
                             if(r.erro)
@@ -48,6 +49,7 @@ export default function Index() {
                                 alert(r.erro)
                             else 
                             toast.dark('🔄 Aluno alterado!');
+                        }
                     } else
                         toast.error('Chamada incorreta')
                  
@@ -90,10 +92,6 @@ export default function Index() {
     loading.current.complete();
     listar();
    }
-
-   
-
-  
 
    async function editar(item) {
        setNome(item.nm_aluno);
